@@ -1,0 +1,38 @@
+context_length: 8
+split_comparison:
+  horizon: 1
+  conditions:
+    60/10/30:
+      Persistence: {}
+      Moving average: {window: 2}
+      ARIMA: {order: [0, 1, 1]}
+      Att-BiLSTM: {learning_rate: 0.005, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 32, weight_decay: 0.0001, initialization: default}
+      Transformer: {learning_rate: 0.002, batch_size: 64, layers: 2, dropout: 0.0, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      Informer: {nhead: 4, dropout: 0.0, decoder_layers: 2, label_len: 4, distil: false, mix: false, d_model: 128, layers: 1, factor: 3, learning_rate: 0.0005, batch_size: 16, d_ff: 512, weight_decay: 0.0}
+      PatchTST: {nhead: 8, dropout: 0.1, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.0005, batch_size: 32, d_ff: 128, stride: 1}
+      A3TGCN: {hidden_size: 32, graph_k: 1, learning_rate: 0.005, batch_size: 16, weight_decay: 0.0001, improved: true}
+    40/10/50:
+      Persistence: {}
+      Moving average: {window: 2}
+      ARIMA: {order: [1, 1, 0]}
+      Att-BiLSTM: {learning_rate: 0.002, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0001, initialization: default}
+      Transformer: {learning_rate: 0.0005, batch_size: 32, layers: 3, dropout: 0.2, d_model: 128, nhead: 4, d_ff: 256, weight_decay: 1.0e-05, initialization: independent_encoder}
+      Informer: {nhead: 4, dropout: 0.0, decoder_layers: 1, label_len: 4, distil: false, mix: false, d_model: 128, layers: 1, factor: 1, learning_rate: 0.0005, batch_size: 16, d_ff: 256, weight_decay: 1.0e-05}
+      PatchTST: {nhead: 4, dropout: 0.0, d_model: 64, layers: 1, patch_length: 8, learning_rate: 0.002, batch_size: 64, d_ff: 256, stride: 4}
+      A3TGCN: {hidden_size: 128, graph_k: 1, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0001, improved: true}
+    20/10/70:
+      Persistence: {}
+      Moving average: {window: 2}
+      ARIMA: {order: [1, 1, 0]}
+      Att-BiLSTM: {learning_rate: 0.005, batch_size: 8, layers: 2, dropout: 0.0, hidden_size: 128, weight_decay: 0.0001, initialization: default}
+      Transformer: {learning_rate: 0.003, batch_size: 8, layers: 3, dropout: 0.0, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      Informer: {nhead: 4, dropout: 0.1, decoder_layers: 1, label_len: 8, distil: false, mix: true, d_model: 64, layers: 1, factor: 1, learning_rate: 0.003, batch_size: 8, d_ff: 128, weight_decay: 0.0001}
+      PatchTST: {nhead: 8, dropout: 0.0, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.001, batch_size: 16, d_ff: 128, stride: 1}
+      A3TGCN: {hidden_size: 128, graph_k: 1, learning_rate: 0.002, batch_size: 32, weight_decay: 0.0001, improved: true}
+horizon_comparison:
+  split: 40/10/50
+  horizons: [3, 5, 8]
+  models:
+    Persistence: {}
+    Moving average: {window: 2}
+    ARIMA: {order: [1, 1, 0]}

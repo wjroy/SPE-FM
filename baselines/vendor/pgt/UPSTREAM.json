@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/benedekrozemberczki/pytorch_geometric_temporal",
+  "revision": "ea40a6a396b6688a94d7482d9d5fd288eaa2cb3b",
+  "license": "MIT",
+  "license_file": "licenses/PyTorchGeometricTemporal.txt",
+  "files": {
+    "attentiontemporalgcn.py": "torch_geometric_temporal/nn/recurrent/attentiontemporalgcn.py",
+    "temporalgcn.py": "torch_geometric_temporal/nn/recurrent/temporalgcn.py"
+  },
+  "modified_files": ["attentiontemporalgcn.py", "temporalgcn.py"],
+  "core_class": "A3TGCN2",
+  "graph_convolution_dependency": "torch-geometric==2.6.1",
+  "task_adapter": "baselines/graph.py",
+  "task_configuration": "baselines/configs/baseline_search.yaml"
+}

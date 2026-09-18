@@ -1,0 +1,47 @@
+data:
+  csv: data/settlement.csv
+  date_column: date
+  node_prefix: DB
+  split: [0.4, 0.1, 0.5]
+  context: 8
+  horizon: 1
+spatial:
+  candidates: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  prototypes: null
+  restarts: 30
+  max_iter: 1000
+  seed: 42
+  association: inverse
+  path_normalization: true
+  epsilon: 1.0e-12
+model:
+  backbone_weights: weights/model.safetensors
+  prompt_length: 8
+  injection_layers: [0, 1, 2, 17, 18, 19]
+  device: auto
+training:
+  seed: 42
+  batch_size: 8
+  epochs: 100
+  patience: 8
+  lr: 0.0005
+  weight_decay: 0.0
+  loss: mean_pinball
+inference:
+  node_sequence_budget: 8192
+  point_head: 5
+  quantile_crossing_correction: true
+uncertainty:
+  replicas: 300
+  seed: 42
+  detrend_window: 8
+risk:
+  bounds_mm: [0, 10, 20, 30, 40, 50]
+  entropy_divisor: 3.0
+  hyperentropy_ratio: 0.1
+  terminal_shoulders: true
+  sample_standard_entropy: true
+  cloud_drops: 3000
+  entropy_mode: membership
+  grade_scores: [0, 0.25, 0.5, 0.75, 1]
+  seed: 42

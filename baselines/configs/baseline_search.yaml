@@ -1,0 +1,482 @@
+context_length: 8
+experiments:
+  split_comparison:
+    splits: [60/10/30, 40/10/50, 20/10/70]
+    horizons: [1]
+    families: [statistical, neural]
+  horizon_comparison:
+    splits: [40/10/50]
+    horizons: [3, 5, 8]
+    families: [statistical]
+selection:
+  subset: validation
+  test_usage: selected_configuration_only
+  statistical_metric: pooled_rmse_mm
+  tie_break: candidate_order
+statistical_fit:
+  maxiter: 50
+  nonconvergence: record
+  fit_error: raise
+implementation:
+  temporal_node_handling: shared_nodewise
+  normalization: training_node_mean_std
+  transformer_activation: gelu
+  transformer_norm_first: true
+  informer_formulation: official_informer_encoder_decoder
+  patchtst_formulation: official_supervised_backbone
+  patchtst_pooling: flatten
+  a3tgcn_formulation: pytorch_geometric_temporal_A3TGCN2
+  graph_symmetrization: maximum
+  graph_self_loops: true
+  graph_normalization: symmetric_degree_in_gcn
+neural_training:
+  optimizer: AdamW
+  loss: MSE
+  augmentation: none
+  clip_norm: 1.0
+  evaluation_batch_size: 32
+  evaluation_seed: 42
+  scheduler:
+    factor: 0.5
+    patience: 8
+    min_lr: 1.0e-06
+models:
+  Persistence:
+    family: statistical
+    grid: {}
+    fixed:
+      node_wise: true
+      input_length: 8
+  Moving average:
+    family: statistical
+    grid:
+      window: [2, 3, 4, 5, 7, 8]
+    fixed:
+      node_wise: true
+      input_length: 8
+  ARIMA:
+    family: statistical
+    grid:
+      order:
+      - [0, 1, 0]
+      - [1, 1, 0]
+      - [0, 1, 1]
+      - [1, 1, 1]
+      - [2, 1, 0]
+      - [0, 1, 2]
+    fixed:
+      node_wise: true
+      input_length: 8
+      trend: n
+      enforce_stationarity: true
+      enforce_invertibility: true
+  Att-BiLSTM:
+    family: neural
+    random_space:
+      learning_rate: [0.0005, 0.001, 0.002, 0.003, 0.005]
+      batch_size: [8, 16, 32, 64]
+      weight_decay: [0.0, 1.0e-05, 0.0001]
+      hidden_size: [16, 32, 64, 128]
+      dropout: [0.0, 0.05, 0.1, 0.2]
+      layers: [1, 2, 3]
+      initialization: [default, forget_bias_one]
+    fixed:
+      attention: additive_temporal
+    candidates:
+      60/10/30:
+      - {learning_rate: 0.005, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 32, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.002, batch_size: 32, layers: 1, dropout: 0.0, hidden_size: 16, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.003, batch_size: 32, layers: 2, dropout: 0.2, hidden_size: 16, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.003, batch_size: 64, layers: 1, dropout: 0.0, hidden_size: 16, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 64, layers: 2, dropout: 0.05, hidden_size: 16, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 32, layers: 2, dropout: 0.05, hidden_size: 16, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 2, dropout: 0.2, hidden_size: 64, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 16, layers: 2, dropout: 0.05, hidden_size: 64, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 128, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.003, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.001, batch_size: 8, layers: 2, dropout: 0.05, hidden_size: 32, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 64, layers: 1, dropout: 0.0, hidden_size: 16, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 32, layers: 1, dropout: 0.0, hidden_size: 128, weight_decay: 0.0001, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 32, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.002, batch_size: 8, layers: 2, dropout: 0.0, hidden_size: 32, weight_decay: 0.0, initialization: forget_bias_one}
+      40/10/50:
+      - {learning_rate: 0.002, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.005, batch_size: 64, layers: 2, dropout: 0.2, hidden_size: 64, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.003, batch_size: 32, layers: 2, dropout: 0.0, hidden_size: 128, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 32, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.003, batch_size: 16, layers: 2, dropout: 0.2, hidden_size: 64, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.003, batch_size: 16, layers: 2, dropout: 0.1, hidden_size: 16, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 128, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.002, batch_size: 32, layers: 2, dropout: 0.2, hidden_size: 32, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 2, dropout: 0.0, hidden_size: 32, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 16, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.003, batch_size: 16, layers: 2, dropout: 0.1, hidden_size: 64, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.001, batch_size: 64, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.002, batch_size: 64, layers: 1, dropout: 0.0, hidden_size: 128, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 32, layers: 2, dropout: 0.0, hidden_size: 128, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.002, batch_size: 64, layers: 2, dropout: 0.0, hidden_size: 32, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 64, layers: 2, dropout: 0.2, hidden_size: 16, weight_decay: 1.0e-05, initialization: default}
+      20/10/70:
+      - {learning_rate: 0.001, batch_size: 64, layers: 3, dropout: 0.0, hidden_size: 128, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.003, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 128, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.005, batch_size: 32, layers: 2, dropout: 0.0, hidden_size: 64, weight_decay: 0.0001, initialization: forget_bias_one}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 2, dropout: 0.05, hidden_size: 64, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 16, layers: 2, dropout: 0.1, hidden_size: 32, weight_decay: 0.0, initialization: forget_bias_one}
+      - {learning_rate: 0.003, batch_size: 32, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 1.0e-05, initialization: forget_bias_one}
+      - {learning_rate: 0.001, batch_size: 8, layers: 2, dropout: 0.0, hidden_size: 32, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.001, batch_size: 16, layers: 2, dropout: 0.2, hidden_size: 128, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.002, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.005, batch_size: 8, layers: 2, dropout: 0.0, hidden_size: 128, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.003, batch_size: 32, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.001, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.005, batch_size: 32, layers: 2, dropout: 0.1, hidden_size: 32, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.005, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 32, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.002, batch_size: 16, layers: 1, dropout: 0.0, hidden_size: 64, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.0, hidden_size: 16, weight_decay: 0.0, initialization: forget_bias_one}
+    training:
+      metric: RMSE
+      budget_unit: epochs
+      budgets: [80, 200, 400]
+      keep: [6, 3]
+      protected_candidate: 1
+      seeds: [42, 43, 44]
+      patience_checks: 40
+      evaluation_interval: epoch
+      min_updates: 0
+      final_selection: finalist_seed_mean
+  Transformer:
+    family: neural
+    random_space:
+      learning_rate: [0.0005, 0.001, 0.002, 0.003, 0.005]
+      batch_size: [8, 16, 32, 64]
+      weight_decay: [0.0, 1.0e-05, 0.0001]
+      d_model: [32, 64, 128]
+      nhead: [4, 8]
+      layers: [1, 2, 3]
+      d_ff_multiplier: [2, 4]
+      dropout: [0.0, 0.05, 0.1, 0.2]
+      initialization: [default, independent_encoder]
+    fixed:
+      pooling: additive
+    candidates:
+      60/10/30:
+      - {learning_rate: 0.002, batch_size: 64, layers: 2, dropout: 0.0, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.003, batch_size: 64, layers: 3, dropout: 0.0, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.005, batch_size: 32, layers: 2, dropout: 0.05, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.003, batch_size: 8, layers: 3, dropout: 0.2, d_model: 32, nhead: 4, d_ff: 128, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 64, layers: 2, dropout: 0.0, d_model: 64, nhead: 4, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.005, batch_size: 64, layers: 3, dropout: 0.1, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.002, batch_size: 64, layers: 1, dropout: 0.05, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 0.0, initialization: independent_encoder}
+      - {learning_rate: 0.003, batch_size: 8, layers: 1, dropout: 0.2, d_model: 32, nhead: 8, d_ff: 64, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.005, batch_size: 8, layers: 3, dropout: 0.05, d_model: 32, nhead: 4, d_ff: 128, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.003, batch_size: 16, layers: 1, dropout: 0.2, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 1, dropout: 0.05, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.001, batch_size: 16, layers: 1, dropout: 0.05, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.002, batch_size: 64, layers: 3, dropout: 0.05, d_model: 32, nhead: 4, d_ff: 64, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 64, layers: 3, dropout: 0.2, d_model: 32, nhead: 4, d_ff: 128, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 32, layers: 1, dropout: 0.05, d_model: 128, nhead: 4, d_ff: 256, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.003, batch_size: 16, layers: 2, dropout: 0.05, d_model: 128, nhead: 4, d_ff: 256, weight_decay: 1.0e-05, initialization: default}
+      40/10/50:
+      - {learning_rate: 0.002, batch_size: 16, layers: 1, dropout: 0.1, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.003, batch_size: 64, layers: 1, dropout: 0.1, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.005, batch_size: 16, layers: 3, dropout: 0.0, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.005, batch_size: 64, layers: 3, dropout: 0.05, d_model: 128, nhead: 4, d_ff: 256, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.001, batch_size: 16, layers: 3, dropout: 0.2, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.2, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 32, layers: 1, dropout: 0.2, d_model: 64, nhead: 4, d_ff: 128, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 64, layers: 1, dropout: 0.1, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 32, layers: 3, dropout: 0.1, d_model: 128, nhead: 8, d_ff: 512, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.002, batch_size: 32, layers: 2, dropout: 0.0, d_model: 128, nhead: 4, d_ff: 512, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 1, dropout: 0.05, d_model: 64, nhead: 8, d_ff: 128, weight_decay: 0.0, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 8, layers: 3, dropout: 0.05, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.005, batch_size: 32, layers: 3, dropout: 0.05, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.005, batch_size: 32, layers: 2, dropout: 0.1, d_model: 128, nhead: 8, d_ff: 512, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 32, layers: 3, dropout: 0.2, d_model: 128, nhead: 4, d_ff: 256, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.001, batch_size: 32, layers: 3, dropout: 0.1, d_model: 32, nhead: 8, d_ff: 128, weight_decay: 0.0001, initialization: default}
+      20/10/70:
+      - {learning_rate: 0.001, batch_size: 32, layers: 3, dropout: 0.0, d_model: 64, nhead: 4, d_ff: 128, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 2, dropout: 0.2, d_model: 64, nhead: 8, d_ff: 128, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.001, batch_size: 16, layers: 3, dropout: 0.0, d_model: 128, nhead: 4, d_ff: 512, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 64, layers: 3, dropout: 0.0, d_model: 64, nhead: 4, d_ff: 128, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.003, batch_size: 16, layers: 1, dropout: 0.0, d_model: 128, nhead: 8, d_ff: 512, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 16, layers: 3, dropout: 0.1, d_model: 32, nhead: 4, d_ff: 128, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.0005, batch_size: 32, layers: 2, dropout: 0.2, d_model: 128, nhead: 4, d_ff: 512, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.002, batch_size: 32, layers: 3, dropout: 0.05, d_model: 64, nhead: 4, d_ff: 128, weight_decay: 0.0, initialization: independent_encoder}
+      - {learning_rate: 0.002, batch_size: 8, layers: 1, dropout: 0.05, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.005, batch_size: 8, layers: 2, dropout: 0.2, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0, initialization: default}
+      - {learning_rate: 0.003, batch_size: 8, layers: 3, dropout: 0.0, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 0.0001, initialization: default}
+      - {learning_rate: 0.0005, batch_size: 64, layers: 3, dropout: 0.0, d_model: 32, nhead: 8, d_ff: 64, weight_decay: 0.0001, initialization: independent_encoder}
+      - {learning_rate: 0.002, batch_size: 16, layers: 1, dropout: 0.0, d_model: 128, nhead: 8, d_ff: 256, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.002, batch_size: 64, layers: 1, dropout: 0.0, d_model: 64, nhead: 8, d_ff: 256, weight_decay: 1.0e-05, initialization: default}
+      - {learning_rate: 0.005, batch_size: 32, layers: 1, dropout: 0.1, d_model: 128, nhead: 8, d_ff: 512, weight_decay: 1.0e-05, initialization: independent_encoder}
+      - {learning_rate: 0.002, batch_size: 64, layers: 1, dropout: 0.2, d_model: 128, nhead: 4, d_ff: 256, weight_decay: 1.0e-05, initialization: independent_encoder}
+    training:
+      metric: RMSE
+      budget_unit: epochs
+      budgets: [80, 200, 400]
+      keep: [6, 3]
+      protected_candidate: 1
+      seeds: [42, 43, 44]
+      patience_checks: 40
+      evaluation_interval: epoch
+      min_updates: 0
+      final_selection: finalist_seed_mean
+  Informer:
+    family: neural
+    random_space:
+      learning_rate: [0.0005, 0.001, 0.002, 0.003, 0.005]
+      batch_size: [8, 16, 32, 64]
+      weight_decay: [0.0, 1.0e-05, 0.0001]
+      d_model: [32, 64, 128]
+      nhead: [4, 8]
+      d_ff_multiplier: [2, 4]
+      dropout: [0.0, 0.05, 0.1, 0.2]
+      factor: [1, 3]
+      decoder_layers: [1, 2]
+      label_len: [2, 4, 8]
+      distil: [false, true]
+      mix: [false, true]
+      layers: [1, 2]
+    fixed:
+      attention: ProbSparse
+      activation: gelu
+      embedding: timeF
+      frequency: d
+      time_features: zeros
+      decoder_padding: 0
+      initialization: default
+    candidates:
+      60/10/30:
+      - {nhead: 8, dropout: 0.0, decoder_layers: 2, label_len: 2, distil: true, mix: true, d_model: 128, layers: 1, factor: 3, learning_rate: 0.0005, batch_size: 32, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 8, dropout: 0.0, decoder_layers: 2, label_len: 2, distil: true, mix: true, d_model: 128, layers: 1, factor: 1, learning_rate: 0.0005, batch_size: 32, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 1, label_len: 4, distil: false, mix: false, d_model: 128, layers: 2, factor: 3, learning_rate: 0.001, batch_size: 8, d_ff: 512, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 1, label_len: 4, distil: false, mix: true, d_model: 64, layers: 1, factor: 3, learning_rate: 0.005, batch_size: 64, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 8, dropout: 0.05, decoder_layers: 2, label_len: 4, distil: false, mix: true, d_model: 64, layers: 2, factor: 3, learning_rate: 0.002, batch_size: 8, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 1, label_len: 2, distil: false, mix: true, d_model: 64, layers: 1, factor: 1, learning_rate: 0.002, batch_size: 16, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 2, label_len: 4, distil: false, mix: false, d_model: 128, layers: 1, factor: 3, learning_rate: 0.0005, batch_size: 16, d_ff: 512, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 2, label_len: 4, distil: false, mix: true, d_model: 64, layers: 2, factor: 3, learning_rate: 0.001, batch_size: 32, d_ff: 256, weight_decay: 1.0e-05}
+      - {nhead: 8, dropout: 0.2, decoder_layers: 2, label_len: 2, distil: true, mix: true, d_model: 128, layers: 2, factor: 3, learning_rate: 0.001, batch_size: 8, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 2, label_len: 2, distil: true, mix: false, d_model: 32, layers: 2, factor: 3, learning_rate: 0.005, batch_size: 8, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 2, label_len: 8, distil: false, mix: true, d_model: 128, layers: 2, factor: 3, learning_rate: 0.003, batch_size: 16, d_ff: 512, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 1, label_len: 8, distil: true, mix: false, d_model: 32, layers: 2, factor: 3, learning_rate: 0.005, batch_size: 32, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 8, dropout: 0.05, decoder_layers: 2, label_len: 2, distil: false, mix: false, d_model: 128, layers: 1, factor: 3, learning_rate: 0.001, batch_size: 32, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 1, label_len: 2, distil: true, mix: true, d_model: 64, layers: 2, factor: 1, learning_rate: 0.003, batch_size: 32, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 2, label_len: 4, distil: false, mix: false, d_model: 32, layers: 1, factor: 1, learning_rate: 0.003, batch_size: 16, d_ff: 64, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.2, decoder_layers: 1, label_len: 2, distil: false, mix: true, d_model: 128, layers: 1, factor: 3, learning_rate: 0.001, batch_size: 8, d_ff: 512, weight_decay: 0.0}
+      40/10/50:
+      - {nhead: 4, dropout: 0.0, decoder_layers: 1, label_len: 8, distil: false, mix: false, d_model: 64, layers: 1, factor: 1, learning_rate: 0.001, batch_size: 32, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 1, label_len: 8, distil: false, mix: true, d_model: 128, layers: 1, factor: 1, learning_rate: 0.001, batch_size: 16, d_ff: 512, weight_decay: 1.0e-05}
+      - {nhead: 8, dropout: 0.2, decoder_layers: 2, label_len: 4, distil: false, mix: false, d_model: 128, layers: 1, factor: 1, learning_rate: 0.001, batch_size: 16, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 1, label_len: 2, distil: true, mix: false, d_model: 64, layers: 2, factor: 1, learning_rate: 0.003, batch_size: 32, d_ff: 128, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 1, label_len: 4, distil: false, mix: true, d_model: 64, layers: 1, factor: 3, learning_rate: 0.002, batch_size: 16, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 2, label_len: 2, distil: false, mix: false, d_model: 128, layers: 1, factor: 1, learning_rate: 0.002, batch_size: 16, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.1, decoder_layers: 1, label_len: 2, distil: false, mix: true, d_model: 32, layers: 1, factor: 3, learning_rate: 0.0005, batch_size: 16, d_ff: 64, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 1, label_len: 8, distil: false, mix: true, d_model: 128, layers: 1, factor: 1, learning_rate: 0.0005, batch_size: 8, d_ff: 512, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 2, label_len: 2, distil: false, mix: false, d_model: 128, layers: 2, factor: 1, learning_rate: 0.002, batch_size: 16, d_ff: 512, weight_decay: 0.0}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 1, label_len: 4, distil: false, mix: false, d_model: 32, layers: 1, factor: 1, learning_rate: 0.001, batch_size: 16, d_ff: 128, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.0, decoder_layers: 2, label_len: 2, distil: false, mix: false, d_model: 64, layers: 1, factor: 1, learning_rate: 0.005, batch_size: 8, d_ff: 256, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 2, label_len: 4, distil: false, mix: false, d_model: 128, layers: 1, factor: 3, learning_rate: 0.0005, batch_size: 8, d_ff: 512, weight_decay: 1.0e-05}
+      - {nhead: 8, dropout: 0.05, decoder_layers: 2, label_len: 2, distil: false, mix: true, d_model: 128, layers: 2, factor: 3, learning_rate: 0.002, batch_size: 16, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 8, dropout: 0.2, decoder_layers: 1, label_len: 8, distil: false, mix: false, d_model: 64, layers: 1, factor: 3, learning_rate: 0.003, batch_size: 16, d_ff: 128, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 1, label_len: 4, distil: false, mix: false, d_model: 128, layers: 1, factor: 1, learning_rate: 0.0005, batch_size: 16, d_ff: 256, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 1, label_len: 2, distil: false, mix: true, d_model: 64, layers: 1, factor: 3, learning_rate: 0.003, batch_size: 8, d_ff: 128, weight_decay: 1.0e-05}
+      20/10/70:
+      - {nhead: 4, dropout: 0.0, decoder_layers: 1, label_len: 8, distil: false, mix: false, d_model: 64, layers: 1, factor: 3, learning_rate: 0.001, batch_size: 32, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 1, label_len: 4, distil: true, mix: true, d_model: 32, layers: 2, factor: 1, learning_rate: 0.001, batch_size: 8, d_ff: 64, weight_decay: 1.0e-05}
+      - {nhead: 8, dropout: 0.1, decoder_layers: 2, label_len: 8, distil: false, mix: false, d_model: 64, layers: 1, factor: 1, learning_rate: 0.005, batch_size: 32, d_ff: 128, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.1, decoder_layers: 2, label_len: 2, distil: true, mix: false, d_model: 128, layers: 2, factor: 3, learning_rate: 0.003, batch_size: 32, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.0, decoder_layers: 1, label_len: 2, distil: true, mix: false, d_model: 32, layers: 2, factor: 1, learning_rate: 0.005, batch_size: 32, d_ff: 128, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.05, decoder_layers: 1, label_len: 2, distil: false, mix: true, d_model: 64, layers: 2, factor: 3, learning_rate: 0.0005, batch_size: 64, d_ff: 128, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.2, decoder_layers: 2, label_len: 2, distil: false, mix: true, d_model: 32, layers: 1, factor: 3, learning_rate: 0.003, batch_size: 32, d_ff: 64, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 2, label_len: 8, distil: false, mix: true, d_model: 64, layers: 1, factor: 1, learning_rate: 0.003, batch_size: 32, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 2, label_len: 8, distil: false, mix: true, d_model: 128, layers: 1, factor: 1, learning_rate: 0.003, batch_size: 64, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 2, label_len: 2, distil: false, mix: false, d_model: 64, layers: 1, factor: 3, learning_rate: 0.001, batch_size: 8, d_ff: 256, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.0, decoder_layers: 1, label_len: 2, distil: true, mix: false, d_model: 64, layers: 2, factor: 1, learning_rate: 0.003, batch_size: 32, d_ff: 128, weight_decay: 1.0e-05}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 1, label_len: 2, distil: true, mix: true, d_model: 128, layers: 2, factor: 3, learning_rate: 0.005, batch_size: 32, d_ff: 512, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.1, decoder_layers: 1, label_len: 8, distil: false, mix: true, d_model: 64, layers: 1, factor: 1, learning_rate: 0.003, batch_size: 8, d_ff: 128, weight_decay: 0.0001}
+      - {nhead: 4, dropout: 0.05, decoder_layers: 1, label_len: 8, distil: false, mix: true, d_model: 64, layers: 1, factor: 3, learning_rate: 0.005, batch_size: 64, d_ff: 256, weight_decay: 0.0}
+      - {nhead: 8, dropout: 0.1, decoder_layers: 1, label_len: 2, distil: false, mix: true, d_model: 32, layers: 2, factor: 1, learning_rate: 0.0005, batch_size: 16, d_ff: 64, weight_decay: 1.0e-05}
+      - {nhead: 8, dropout: 0.1, decoder_layers: 2, label_len: 4, distil: true, mix: true, d_model: 128, layers: 2, factor: 1, learning_rate: 0.001, batch_size: 64, d_ff: 256, weight_decay: 0.0}
+    training:
+      metric: RMSE
+      budget_unit: epochs
+      budgets: [80, 200, 400]
+      keep: [6, 3]
+      protected_candidate: 1
+      seeds: [42, 43, 44]
+      patience_checks: 40
+      evaluation_interval: epoch
+      min_updates: 0
+      final_selection: finalist_seed_mean
+  PatchTST:
+    family: neural
+    random_space:
+      learning_rate: [0.0001, 0.0005, 0.001, 0.002, 0.005]
+      batch_size: [16, 32, 64]
+      d_model: [16, 32, 64, 128]
+      layers: [1, 2, 3]
+      nhead: [4, 8]
+      d_ff_multiplier: [2, 4]
+      dropout: [0.0, 0.1, 0.2]
+      patch_length: [2, 4, 8]
+      stride: patch_length // 2
+    fixed:
+      head_type: flatten
+      individual: false
+      norm: BatchNorm
+      attention_dropout: 0.0
+      activation: gelu
+      residual_attention: true
+      pre_norm: false
+      position_encoding: zeros
+      learn_position: true
+      fc_dropout: 0.0
+      head_dropout: 0.0
+      padding_patch: end
+      revin: false
+      revin_affine: false
+      subtract_last: false
+      weight_decay: 0.0001
+      initialization: default
+    candidates:
+      60/10/30:
+      - {nhead: 8, dropout: 0.1, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.0005, batch_size: 32, d_ff: 128, stride: 1}
+      - {nhead: 4, dropout: 0.0, d_model: 32, layers: 1, patch_length: 4, learning_rate: 0.001, batch_size: 32, d_ff: 128, stride: 2}
+      - {nhead: 8, dropout: 0.2, d_model: 128, layers: 1, patch_length: 8, learning_rate: 0.002, batch_size: 64, d_ff: 256, stride: 4}
+      - {nhead: 8, dropout: 0.2, d_model: 64, layers: 3, patch_length: 2, learning_rate: 0.001, batch_size: 64, d_ff: 128, stride: 1}
+      - {nhead: 4, dropout: 0.0, d_model: 64, layers: 1, patch_length: 8, learning_rate: 0.0001, batch_size: 64, d_ff: 128, stride: 4}
+      - {nhead: 8, dropout: 0.2, d_model: 32, layers: 1, patch_length: 2, learning_rate: 0.002, batch_size: 32, d_ff: 64, stride: 1}
+      - {nhead: 8, dropout: 0.2, d_model: 128, layers: 1, patch_length: 2, learning_rate: 0.0005, batch_size: 16, d_ff: 512, stride: 1}
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 2, patch_length: 2, learning_rate: 0.002, batch_size: 64, d_ff: 256, stride: 1}
+      - {nhead: 8, dropout: 0.2, d_model: 16, layers: 1, patch_length: 2, learning_rate: 0.0005, batch_size: 64, d_ff: 64, stride: 1}
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 1, patch_length: 8, learning_rate: 0.001, batch_size: 16, d_ff: 256, stride: 4}
+      - {nhead: 8, dropout: 0.1, d_model: 16, layers: 2, patch_length: 4, learning_rate: 0.0001, batch_size: 32, d_ff: 64, stride: 2}
+      - {nhead: 8, dropout: 0.0, d_model: 64, layers: 2, patch_length: 4, learning_rate: 0.002, batch_size: 32, d_ff: 256, stride: 2}
+      - {nhead: 4, dropout: 0.2, d_model: 32, layers: 3, patch_length: 4, learning_rate: 0.005, batch_size: 16, d_ff: 64, stride: 2}
+      - {nhead: 8, dropout: 0.1, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.005, batch_size: 16, d_ff: 128, stride: 1}
+      - {nhead: 8, dropout: 0.2, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.0005, batch_size: 64, d_ff: 64, stride: 1}
+      - {nhead: 4, dropout: 0.2, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.005, batch_size: 16, d_ff: 128, stride: 1}
+      40/10/50:
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 2, patch_length: 2, learning_rate: 0.0005, batch_size: 32, d_ff: 256, stride: 1}
+      - {nhead: 4, dropout: 0.0, d_model: 32, layers: 1, patch_length: 4, learning_rate: 0.001, batch_size: 32, d_ff: 128, stride: 2}
+      - {nhead: 8, dropout: 0.0, d_model: 128, layers: 2, patch_length: 8, learning_rate: 0.002, batch_size: 64, d_ff: 512, stride: 4}
+      - {nhead: 8, dropout: 0.1, d_model: 32, layers: 3, patch_length: 2, learning_rate: 0.0001, batch_size: 64, d_ff: 128, stride: 1}
+      - {nhead: 8, dropout: 0.2, d_model: 128, layers: 3, patch_length: 8, learning_rate: 0.001, batch_size: 16, d_ff: 256, stride: 4}
+      - {nhead: 4, dropout: 0.0, d_model: 16, layers: 1, patch_length: 8, learning_rate: 0.001, batch_size: 16, d_ff: 32, stride: 4}
+      - {nhead: 4, dropout: 0.0, d_model: 64, layers: 1, patch_length: 8, learning_rate: 0.002, batch_size: 64, d_ff: 256, stride: 4}
+      - {nhead: 8, dropout: 0.0, d_model: 128, layers: 1, patch_length: 2, learning_rate: 0.001, batch_size: 16, d_ff: 512, stride: 1}
+      - {nhead: 4, dropout: 0.1, d_model: 16, layers: 3, patch_length: 8, learning_rate: 0.001, batch_size: 32, d_ff: 32, stride: 4}
+      - {nhead: 8, dropout: 0.2, d_model: 64, layers: 1, patch_length: 2, learning_rate: 0.0005, batch_size: 16, d_ff: 128, stride: 1}
+      - {nhead: 8, dropout: 0.1, d_model: 128, layers: 2, patch_length: 4, learning_rate: 0.002, batch_size: 32, d_ff: 512, stride: 2}
+      - {nhead: 4, dropout: 0.1, d_model: 64, layers: 3, patch_length: 8, learning_rate: 0.001, batch_size: 32, d_ff: 128, stride: 4}
+      - {nhead: 4, dropout: 0.2, d_model: 16, layers: 1, patch_length: 4, learning_rate: 0.001, batch_size: 16, d_ff: 32, stride: 2}
+      - {nhead: 8, dropout: 0.1, d_model: 16, layers: 1, patch_length: 8, learning_rate: 0.0001, batch_size: 32, d_ff: 64, stride: 4}
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 3, patch_length: 8, learning_rate: 0.001, batch_size: 64, d_ff: 256, stride: 4}
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 3, patch_length: 8, learning_rate: 0.005, batch_size: 32, d_ff: 256, stride: 4}
+      20/10/70:
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 2, patch_length: 4, learning_rate: 0.001, batch_size: 16, d_ff: 256, stride: 2}
+      - {nhead: 4, dropout: 0.0, d_model: 32, layers: 1, patch_length: 4, learning_rate: 0.001, batch_size: 32, d_ff: 128, stride: 2}
+      - {nhead: 8, dropout: 0.1, d_model: 64, layers: 2, patch_length: 2, learning_rate: 0.0001, batch_size: 32, d_ff: 256, stride: 1}
+      - {nhead: 8, dropout: 0.0, d_model: 32, layers: 2, patch_length: 2, learning_rate: 0.001, batch_size: 16, d_ff: 128, stride: 1}
+      - {nhead: 8, dropout: 0.1, d_model: 16, layers: 3, patch_length: 8, learning_rate: 0.002, batch_size: 64, d_ff: 32, stride: 4}
+      - {nhead: 4, dropout: 0.2, d_model: 64, layers: 2, patch_length: 8, learning_rate: 0.0001, batch_size: 16, d_ff: 256, stride: 4}
+      - {nhead: 4, dropout: 0.0, d_model: 64, layers: 3, patch_length: 2, learning_rate: 0.0005, batch_size: 16, d_ff: 256, stride: 1}
+      - {nhead: 8, dropout: 0.0, d_model: 64, layers: 3, patch_length: 4, learning_rate: 0.001, batch_size: 64, d_ff: 256, stride: 2}
+      - {nhead: 8, dropout: 0.0, d_model: 64, layers: 3, patch_length: 4, learning_rate: 0.002, batch_size: 32, d_ff: 256, stride: 2}
+      - {nhead: 4, dropout: 0.0, d_model: 32, layers: 3, patch_length: 4, learning_rate: 0.0005, batch_size: 32, d_ff: 128, stride: 2}
+      - {nhead: 4, dropout: 0.1, d_model: 128, layers: 3, patch_length: 2, learning_rate: 0.0001, batch_size: 32, d_ff: 256, stride: 1}
+      - {nhead: 8, dropout: 0.1, d_model: 16, layers: 2, patch_length: 4, learning_rate: 0.005, batch_size: 16, d_ff: 64, stride: 2}
+      - {nhead: 8, dropout: 0.1, d_model: 16, layers: 3, patch_length: 2, learning_rate: 0.0001, batch_size: 32, d_ff: 64, stride: 1}
+      - {nhead: 8, dropout: 0.0, d_model: 16, layers: 3, patch_length: 8, learning_rate: 0.002, batch_size: 16, d_ff: 64, stride: 4}
+      - {nhead: 4, dropout: 0.1, d_model: 128, layers: 2, patch_length: 8, learning_rate: 0.0001, batch_size: 32, d_ff: 512, stride: 4}
+      - {nhead: 4, dropout: 0.2, d_model: 16, layers: 2, patch_length: 4, learning_rate: 0.0001, batch_size: 16, d_ff: 64, stride: 2}
+    training:
+      metric: normalized_mse
+      budget_unit: epochs
+      budgets: [60, 180, 400]
+      keep: [6, 3]
+      protected_candidate: 1
+      seeds: [42, 43, 44]
+      patience_checks: 40
+      evaluation_interval: epoch
+      min_updates: 0
+      final_selection: finalist_seed_mean
+  A3TGCN:
+    family: neural
+    random_space:
+      learning_rate: [0.0005, 0.001, 0.002, 0.003, 0.005]
+      batch_size: [8, 16, 32, 64]
+      weight_decay: [0.0, 1.0e-05, 0.0001]
+      hidden_size: [16, 32, 64, 128]
+      graph_k: [1, 2, 4, 8]
+      improved: [false, true]
+    fixed:
+      graph: absolute_correlation_knn
+      graph_source: training_only
+      recurrence: TGCN
+      attention: temporal
+      initialization: default
+    candidates:
+      60/10/30:
+      - {hidden_size: 32, graph_k: 2, learning_rate: 0.005, batch_size: 16, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 32, graph_k: 2, learning_rate: 0.005, batch_size: 16, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 32, graph_k: 1, learning_rate: 0.005, batch_size: 16, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 16, graph_k: 8, learning_rate: 0.002, batch_size: 8, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 128, graph_k: 8, learning_rate: 0.005, batch_size: 16, weight_decay: 0.0, improved: true}
+      - {hidden_size: 16, graph_k: 2, learning_rate: 0.001, batch_size: 32, weight_decay: 1.0e-05, improved: true}
+      - {hidden_size: 32, graph_k: 2, learning_rate: 0.003, batch_size: 16, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 32, graph_k: 8, learning_rate: 0.005, batch_size: 16, weight_decay: 0.0, improved: true}
+      - {hidden_size: 16, graph_k: 8, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0, improved: true}
+      - {hidden_size: 128, graph_k: 4, learning_rate: 0.003, batch_size: 32, weight_decay: 0.0, improved: false}
+      - {hidden_size: 16, graph_k: 2, learning_rate: 0.0005, batch_size: 64, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 128, graph_k: 1, learning_rate: 0.001, batch_size: 8, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 32, graph_k: 1, learning_rate: 0.005, batch_size: 8, weight_decay: 1.0e-05, improved: false}
+      - {hidden_size: 16, graph_k: 2, learning_rate: 0.001, batch_size: 8, weight_decay: 1.0e-05, improved: false}
+      - {hidden_size: 16, graph_k: 4, learning_rate: 0.005, batch_size: 16, weight_decay: 1.0e-05, improved: true}
+      - {hidden_size: 128, graph_k: 2, learning_rate: 0.005, batch_size: 16, weight_decay: 1.0e-05, improved: false}
+      40/10/50:
+      - {hidden_size: 128, graph_k: 1, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 128, graph_k: 4, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 128, graph_k: 1, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 16, graph_k: 2, learning_rate: 0.005, batch_size: 64, weight_decay: 0.0, improved: true}
+      - {hidden_size: 64, graph_k: 2, learning_rate: 0.003, batch_size: 16, weight_decay: 0.0, improved: true}
+      - {hidden_size: 128, graph_k: 8, learning_rate: 0.002, batch_size: 8, weight_decay: 1.0e-05, improved: false}
+      - {hidden_size: 128, graph_k: 1, learning_rate: 0.005, batch_size: 32, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 64, graph_k: 1, learning_rate: 0.005, batch_size: 16, weight_decay: 1.0e-05, improved: true}
+      - {hidden_size: 128, graph_k: 2, learning_rate: 0.003, batch_size: 32, weight_decay: 0.0, improved: true}
+      - {hidden_size: 64, graph_k: 8, learning_rate: 0.003, batch_size: 32, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 64, graph_k: 8, learning_rate: 0.003, batch_size: 32, weight_decay: 0.0, improved: false}
+      - {hidden_size: 32, graph_k: 4, learning_rate: 0.002, batch_size: 8, weight_decay: 1.0e-05, improved: false}
+      - {hidden_size: 64, graph_k: 1, learning_rate: 0.0005, batch_size: 16, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 32, graph_k: 2, learning_rate: 0.002, batch_size: 64, weight_decay: 1.0e-05, improved: true}
+      - {hidden_size: 16, graph_k: 8, learning_rate: 0.003, batch_size: 32, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 64, graph_k: 4, learning_rate: 0.001, batch_size: 32, weight_decay: 0.0001, improved: true}
+      20/10/70:
+      - {hidden_size: 128, graph_k: 2, learning_rate: 0.002, batch_size: 32, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 128, graph_k: 2, learning_rate: 0.002, batch_size: 32, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 128, graph_k: 1, learning_rate: 0.002, batch_size: 32, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 16, graph_k: 2, learning_rate: 0.003, batch_size: 32, weight_decay: 1.0e-05, improved: true}
+      - {hidden_size: 64, graph_k: 2, learning_rate: 0.0005, batch_size: 32, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 32, graph_k: 2, learning_rate: 0.0005, batch_size: 64, weight_decay: 1.0e-05, improved: false}
+      - {hidden_size: 32, graph_k: 1, learning_rate: 0.003, batch_size: 16, weight_decay: 0.0001, improved: false}
+      - {hidden_size: 16, graph_k: 8, learning_rate: 0.003, batch_size: 64, weight_decay: 0.0001, improved: true}
+      - {hidden_size: 128, graph_k: 8, learning_rate: 0.0005, batch_size: 8, weight_decay: 0.0, improved: true}
+      - {hidden_size: 16, graph_k: 8, learning_rate: 0.005, batch_size: 32, weight_decay: 1.0e-05, improved: true}
+      - {hidden_size: 64, graph_k: 1, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0, improved: true}
+      - {hidden_size: 64, graph_k: 4, learning_rate: 0.002, batch_size: 32, weight_decay: 0.0, improved: true}
+      - {hidden_size: 16, graph_k: 1, learning_rate: 0.001, batch_size: 64, weight_decay: 0.0, improved: true}
+      - {hidden_size: 16, graph_k: 2, learning_rate: 0.0005, batch_size: 64, weight_decay: 0.0, improved: true}
+      - {hidden_size: 128, graph_k: 2, learning_rate: 0.003, batch_size: 32, weight_decay: 0.0, improved: false}
+      - {hidden_size: 32, graph_k: 8, learning_rate: 0.002, batch_size: 8, weight_decay: 1.0e-05, improved: true}
+    training:
+      metric: RMSE
+      budget_unit: updates
+      budgets: [400, 1200, 3200]
+      keep: [6, 3]
+      protected_candidate: 1
+      seeds: [42, 43, 44]
+      patience_checks: 25
+      evaluation_interval: 20
+      min_updates: 400
+      final_selection: finalist_seed_mean

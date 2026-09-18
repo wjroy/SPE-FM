@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/zhouhaoyi/Informer2020",
+  "revision": "29f2a739226a509202a092b464163da81fa74960",
+  "license": "Apache-2.0",
+  "license_file": "licenses/Informer.txt",
+  "files": {
+    "model.py": "models/model.py",
+    "attn.py": "models/attn.py",
+    "encoder.py": "models/encoder.py",
+    "decoder.py": "models/decoder.py",
+    "embed.py": "models/embed.py",
+    "masking.py": "utils/masking.py"
+  },
+  "modified_files": ["model.py", "attn.py", "embed.py", "encoder.py"],
+  "task_adapter": "baselines/temporal.py",
+  "task_configuration": "baselines/configs/baseline_search.yaml"
+}

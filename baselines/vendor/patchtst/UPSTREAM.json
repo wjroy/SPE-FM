@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/yuqinie98/PatchTST",
+  "revision": "204c21efe0b39603ad6e2ca640ef5896646ab1a9",
+  "license": "Apache-2.0",
+  "license_file": "licenses/PatchTST.txt",
+  "files": {
+    "PatchTST_backbone.py": "PatchTST_supervised/layers/PatchTST_backbone.py",
+    "PatchTST_layers.py": "PatchTST_supervised/layers/PatchTST_layers.py",
+    "RevIN.py": "PatchTST_supervised/layers/RevIN.py"
+  },
+  "modified_files": ["PatchTST_backbone.py", "PatchTST_layers.py", "RevIN.py"],
+  "revin": {
+    "repository": "https://github.com/ts-kim/RevIN",
+    "license": "MIT",
+    "license_file": "licenses/RevIN.txt",
+    "license_revision": "fee40bc6c87cb536d048bcf1c14c4ed644b875e1"
+  },
+  "task_adapter": "baselines/temporal.py",
+  "task_configuration": "baselines/configs/baseline_search.yaml"
+}
