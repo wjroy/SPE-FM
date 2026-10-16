@@ -1,6 +1,6 @@
 # Experiment parameters
 
-Layer indices are zero-based. Settings: [SPE-FM](spefm/hyperparameters.yaml), [baselines](baselines/configs/baseline_selected.yaml), [Figure 15](baselines/configs/figure15.yaml).
+Layer indices are zero-based. Full-precision settings: [SPE-FM](spefm/hyperparameters.yaml), [baselines](baselines/configs/baseline_selected.yaml), [Figure 15](baselines/configs/figure15.yaml).
 
 ## SPE-FM selected configurations
 
@@ -43,7 +43,7 @@ Split 40/10/50; context 8; horizon 1; seed 42; prompt length 8; batch 8; learnin
 | Decoder gate | Lower 0.2; upper 0.95; neighbors 5 |
 | Point prediction | q0.5; head 5 |
 | Inference | Maximum batch 8; node-sequence budget 8192; quantile crossing correction enabled |
-| Interval calibration | Enabled; target coverage 0.81; learning rate 0.25 |
+| Interval calibration | Single-run intervals / Figure 15; enabled; target coverage 0.81; learning rate 0.25 |
 
 ## Table S1: spatial settings
 
