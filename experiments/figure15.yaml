@@ -1,0 +1,53 @@
+base_config: ../config.yaml
+split: 40/10/50
+context: 8
+horizon: 1
+seed: 42
+threads: 6
+methods: [SPEFM, IO, LORA, FROZEN]
+SPEFM:
+  model:
+    prompt_length: 8
+    injection_layers: [0, 1, 2, 17, 18, 19]
+  training:
+    batch_size: 8
+    epochs: 24
+    patience: 8
+    lr: 0.0005
+    weight_decay: 0.0
+    loss: mean_pinball
+  decoder:
+    enabled: true
+    width: 64
+    batch_size: 16
+    lr: 0.001
+    weight_decay: 0.0
+    gate_lower: 0.2
+    gate_upper: 0.95
+    neighbors: 5
+    epochs: 80
+    patience: 10
+  calibration:
+    enabled: true
+    coverage: 0.81
+    learning_rate: 0.25
+baselines:
+  batch_size: 8
+  epochs: 24
+  patience: 8
+  lr: 0.001
+  weight_decay: 0.00001
+  loss: mean_pinball
+  calibration_enabled: false
+  lora:
+    rank: 6
+    alpha: 8
+    dropout: 0
+figure:
+  font: Times New Roman
+  width_mm: 183
+  height_mm: 126
+  dpi: 600
+  preview_dpi: 180
+  stem: Figure15
+  caption: "Fig. 15. Four settlement-forecasting pipelines: (a) RMSE; (b) MAE; (c) PICP; (d) CWC. SPE-FM uses validation-initialized causal online interval calibration; the other three methods use native uncalibrated quantiles. SPE-FM includes spatial prompts and a separately trained gated decoder. Each dot represents one of 84 correlated nodes from a single-seed run on the fixed semi-synthetic public dataset; this complete-pipeline comparison does not isolate spatial-prompt or calibration contributions and is not an independent blind test. CWC uses nominal coverage 0.80."
