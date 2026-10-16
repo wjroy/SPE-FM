@@ -1,15 +1,14 @@
-# Training seeds corresponding to the displayed Table 5 single-run metrics:
-# Model         60/10/30  40/10/50  20/10/70
-# Att-BiLSTM    42        43        43
-# Transformer   42        42        44
-# Informer      43        42        44
-# PatchTST      42        42        42
-# A3TGCN        44        42        42
-# Run each Table 5 model/split with --seeds <the value above>.
-# Default selected/search execution retains seeds [42, 43, 44] and reports their mean.
-# The four non-PatchTST rows above match the lowest test RMSE among the archived
-# three-seed runs; this correspondence does not establish validation-only seed selection.
-# Table 6 PatchTST uses the arithmetic mean of seeds [42, 43, 44], not seed42 alone.
+# Unified default training seed: 42 for every neural baseline and condition.
+# Model         60/10/30  40/10/50  20/10/70  Extended horizons
+# Att-BiLSTM    42        42        42        not configured
+# Transformer   42        42        42        not configured
+# Informer      42        42        42        not configured
+# PatchTST      42        42        42        42 for T=3,5,8
+# A3TGCN        42        42        42        not configured
+# Effective training seeds are set in baseline_search.yaml: models.<model>.training.seeds.
+# Neural checkpoint evaluation also uses evaluation_seed=42.
+# Default results are single-seed results. Historical Tables 5 and 6 do not
+# all match these defaults; numerical matches do not prove original run seeds.
 # Statistical baselines are deterministic and have no training seed.
 context_length: 8
 split_comparison:
