@@ -1,4 +1,13 @@
-base_config: ../config.yaml
+# Figure 15: four TimesFM adaptation pipelines on settlement.csv.
+# Chronological train/validation/test split: 40/10/50; context 8; horizon 1; seed 42.
+# Scores are computed on unchanged millimetre targets and averaged across nodes.
+# SPE-FM trains spatial prompts and a gated decoder; TimesFM remains frozen.
+# IO trains the input tokenizer and output projection; LoRA trains rank-6 adapters.
+# FROZEN performs inference without neural parameter updates.
+# Only SPE-FM uses validation-initialized causal online interval calibration.
+# IO, LoRA and FROZEN use native uncalibrated quantiles.
+# This is a single-seed comparison of complete pipelines, not isolated module effects.
+base_config: ../../config.yaml
 split: 40/10/50
 context: 8
 horizon: 1
