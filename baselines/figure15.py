@@ -111,7 +111,7 @@ def execute(settings, config, settings_path, output):
                            '--output', str(output / 'SPEFM')], cwd=ROOT, env=env, stdout=handle, stderr=subprocess.STDOUT, check=True)
     for method in METHODS[1:]:
         with (logs / f'{method}.log').open('w', encoding='utf-8') as handle:
-            subprocess.run(prefix + [str(ROOT / 'experiments/adaptation.py'), '--method', method,
+            subprocess.run(prefix + [str(ROOT / 'baselines/adaptation.py'), '--method', method,
                            '--config', str(runtime), '--settings', str(settings_path.resolve()),
                            '--spatial', str(output / 'SPEFM/spatial.npz'), '--output', str(output / method)],
                            cwd=ROOT, env=env, stdout=handle, stderr=subprocess.STDOUT, check=True)
@@ -120,7 +120,7 @@ def execute(settings, config, settings_path, output):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('stage', choices=['run', 'evaluate', 'plot'])
-    parser.add_argument('--config', type=Path, default=Path(__file__).with_suffix('.yaml'))
+    parser.add_argument('--config', type=Path, default=Path(__file__).with_name('configs') / 'figure15.yaml')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--runs', type=Path)
     parser.add_argument('--backbone-weights', type=Path)
@@ -140,7 +140,7 @@ def main():
         elif args.runs is None:
             parser.error('evaluate requires --runs.')
         summarize(output if args.stage == 'run' else args.runs.resolve(), output, config)
-    from plot_figure15 import plot
+    from baselines.plot_figure15 import plot
     plot(output, settings['figure'])
 
 
