@@ -28,7 +28,8 @@ def configuration(path, backbone_weights=None, device=None):
         raise ValueError('Figure 15 requires four methods and uncalibrated baselines.')
     base = (path.resolve().parent / settings['base_config']).resolve()
     config = load_config(base, settings['split'], horizon=settings['horizon'])
-    for section, values in settings['SPEFM'].items():
+    settings.setdefault('seed', config['training']['seed'])
+    for section, values in settings.get('SPEFM', {}).items():
         config.setdefault(section, {}).update(deepcopy(values))
     config['data'].update(context=settings['context'], horizon=settings['horizon'])
     config['training']['seed'] = config['spatial']['seed'] = settings['seed']
