@@ -1,15 +1,6 @@
-# Unified default training seed: 42 for every neural baseline and condition.
-# Model         60/10/30  40/10/50  20/10/70  Extended horizons
-# Att-BiLSTM    42        42        42        not configured
-# Transformer   42        42        42        not configured
-# Informer      42        42        42        not configured
-# PatchTST      42        42        42        42 for T=3,5,8
-# A3TGCN        42        42        42        not configured
-# Effective training seeds are set in baseline_search.yaml: models.<model>.training.seeds.
-# Neural checkpoint evaluation also uses evaluation_seed=42.
-# Default results are single-seed results. Historical Tables 5 and 6 do not
-# all match these defaults; numerical matches do not prove original run seeds.
-# Statistical baselines are deterministic and have no training seed.
+# Neural baseline training seeds: [42, 43, 44] (baseline_search.yaml).
+# Reported MAE/RMSE: arithmetic mean of the three per-seed, node-averaged metrics.
+# Checkpoint evaluation uses seed 42; statistical baselines are deterministic.
 context_length: 8
 split_comparison:
   horizon: 1
