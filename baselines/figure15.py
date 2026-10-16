@@ -127,6 +127,10 @@ def main():
     parser.add_argument('--backbone-weights', type=Path)
     parser.add_argument('--device', choices=['auto', 'cpu', 'cuda'])
     args = parser.parse_args()
+    if args.stage == 'run' and args.runs is not None:
+        parser.error('--runs is only valid for evaluate.')
+    if args.stage == 'evaluate' and args.runs is None:
+        parser.error('evaluate requires --runs.')
     settings, config = configuration(args.config, args.backbone_weights, args.device)
     output = args.output.resolve()
     if output.exists() and any(output.iterdir()):
@@ -134,11 +138,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     (output / 'experiment.yaml').write_text(yaml.safe_dump(settings, sort_keys=False), encoding='utf-8')
     if args.stage == 'run':
-        if args.runs is not None:
-            parser.error('--runs is only valid for evaluate.')
         execute(settings, config, args.config, output)
-    elif args.runs is None:
-        parser.error('evaluate requires --runs.')
     summarize(output if args.stage == 'run' else args.runs.resolve(), output, config)
 
 
