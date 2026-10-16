@@ -7,7 +7,8 @@ experiments:
   horizon_comparison:
     splits: [40/10/50]
     horizons: [3, 5, 8]
-    families: [statistical]
+    families: [statistical, neural]
+    models: [Persistence, Moving average, ARIMA, PatchTST]
 selection:
   subset: validation
   test_usage: selected_configuration_only
