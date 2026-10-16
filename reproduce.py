@@ -1,4 +1,3 @@
-"""Train independent SPE-FM seeds, predict test points, and summarize RMSE/MAE."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import deepcopy
