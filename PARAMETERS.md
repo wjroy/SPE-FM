@@ -38,7 +38,6 @@ Split 40/10/50; context 8; horizon 1; seed 42; prompt length 8; batch 8; learnin
 | Data | Context 8; default split 40/10/50; default horizon 1 |
 | Backbone | TimesFM 2.5-200M; frozen; dimension 1280; 20 layers |
 | Prompt training | AdamW; mean pinball loss; patience 8 |
-| Extended-horizon initialization | Import backend before seeding; deterministic algorithms enabled |
 | Decoder | Width 64; batch 16; AdamW; learning rate 1e-3; weight decay 0; epoch limit 80; patience 10 |
 | Decoder gate | Lower 0.2; upper 0.95; neighbors 5 |
 | Point prediction | q0.5; head 5 |
