@@ -2,16 +2,6 @@
 
 Layer indices are zero-based. Settings: [SPE-FM](spefm/hyperparameters.yaml), [baselines](baselines/configs/baseline_selected.yaml), [Figure 15](baselines/configs/figure15.yaml).
 
-## Seeds
-
-| Experiment | Training seeds | Spatial seed | Perturbation / risk seed | Metric aggregation |
-|---|---|---|---|---|
-| Main setting / Table 2 | 42 | 42 | 42 / 42 | Single run |
-| Tables 4 and S2 / Figure 15 | 42 | 42 | 42 / 42 | Single run |
-| Tables 5–6 | 42, 43, 44 | 42 | — | Mean and sample standard deviation |
-| Table S1 | — | 42 | — | Deterministic configuration |
-| Tables S3–S4 / Figure 16 | — | — | 42 / 42 | Inference |
-
 ## SPE-FM selected configurations
 
 | Experiment | Split | Horizon | Prompt length | Injection layers | Batch | Microbatch | Learning rate | Weight decay | Epoch limit | Seeds |
