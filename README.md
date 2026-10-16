@@ -8,7 +8,7 @@ Settlement forecasting and risk synthesis with DTW spatial prototypes and a froz
 |---|---|
 | [spefm/](spefm/) | Model, decoder, data, spatial priors, training, prediction, metrics, calibration and risk modules |
 | [spefm/hyperparameters.yaml](spefm/hyperparameters.yaml) | SPE-FM parameters, split/horizon settings and seeds |
-| [baselines/](baselines/) | Statistical, temporal and graph baselines; adaptation methods and Figure 15 scripts |
+| [baselines/](baselines/) | Statistical, temporal and graph baselines; four-method adaptation comparison |
 | [baselines/configs/](baselines/configs/) | `baseline_selected.yaml`: fixed parameters; `baseline_search.yaml`: search spaces and seeds; `figure15.yaml`: adaptation comparison |
 | [baselines/vendor/](baselines/vendor/) | Informer, PatchTST and A3TGCN sources; `UPSTREAM.json`: source revisions and licenses |
 | [data/settlement.csv](data/settlement.csv) | Monitoring data: 340 observations × 84 nodes, millimetres |
@@ -17,7 +17,7 @@ Settlement forecasting and risk synthesis with DTW spatial prototypes and a froz
 | [reproduce.py](reproduce.py) | Multi-seed SPE-FM point forecasts and RMSE/MAE summaries |
 | [run.py](run.py) / [calibrate.py](calibrate.py) | Individual model stages / interval calibration |
 | [run_baselines.py](run_baselines.py) | Baseline experiment entry point |
-| [requirements.txt](requirements.txt) / [requirements-figures.txt](requirements-figures.txt) | Core / plotting dependencies |
+| [requirements.txt](requirements.txt) | Python dependencies |
 | [licenses/](licenses/) / [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | Third-party licenses and attribution |
 
 ## Setup
@@ -73,11 +73,10 @@ python run_baselines.py --mode selected --models PatchTST --split 40/10/50 --hor
 ## Figure 15
 
 ```bash
-python -m pip install -r requirements-figures.txt
 python baselines/figure15.py run --output outputs/figure15
 ```
 
-Single seed 42. SPE-FM uses calibrated intervals; IO, LoRA and FROZEN use native intervals. Outputs include `results.csv`, `parameters.csv`, `source_data.csv` and `Figure15.*` figures.
+Single seed 42. SPE-FM uses calibrated intervals; IO, LoRA and FROZEN use native intervals. Outputs: `results.csv`, `results.json`, `parameters.csv` and `source_data.csv`.
 
 ## License
 
