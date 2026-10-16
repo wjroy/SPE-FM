@@ -175,11 +175,19 @@ def main(argv=None):
     parser.add_argument('--horizon', type=int)
     parser.add_argument('--device', choices=('auto', 'cpu', 'cuda'), default='auto')
     parser.add_argument('--threads', type=int, default=1)
+    parser.add_argument('--seeds', type=int, nargs='+',
+                        help='Override neural training seeds; evaluation_seed is unchanged.')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args(argv)
     search = yaml.safe_load(args.search_config.read_text(encoding='utf-8'))
     selected = yaml.safe_load(args.selected_config.read_text(encoding='utf-8'))
     data_cfg = yaml.safe_load(args.data_config.read_text(encoding='utf-8'))['data']
+    if args.seeds is not None:
+        if len(set(args.seeds)) != len(args.seeds) or any(not 0 <= seed < 2**32 for seed in args.seeds):
+            parser.error('Training seeds must be distinct integers in [0, 2**32).')
+        for spec in search['models'].values():
+            if spec['family'] == 'neural':
+                spec['training']['seeds'] = args.seeds.copy()
     validate_protocol(search)
     if args.threads < 1 or data_cfg['context'] != search['context_length']:
         parser.error('Use a positive thread count and matching data/search context lengths.')
