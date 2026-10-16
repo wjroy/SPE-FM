@@ -1,3 +1,16 @@
+# Training seeds corresponding to the displayed Table 5 single-run metrics:
+# Model         60/10/30  40/10/50  20/10/70
+# Att-BiLSTM    42        43        43
+# Transformer   42        42        44
+# Informer      43        42        44
+# PatchTST      42        42        42
+# A3TGCN        44        42        42
+# Run each Table 5 model/split with --seeds <the value above>.
+# Default selected/search execution retains seeds [42, 43, 44] and reports their mean.
+# The four non-PatchTST rows above match the lowest test RMSE among the archived
+# three-seed runs; this correspondence does not establish validation-only seed selection.
+# Table 6 PatchTST uses the arithmetic mean of seeds [42, 43, 44], not seed42 alone.
+# Statistical baselines are deterministic and have no training seed.
 context_length: 8
 split_comparison:
   horizon: 1
@@ -36,3 +49,5 @@ horizon_comparison:
     Persistence: {}
     Moving average: {window: 2}
     ARIMA: {order: [1, 1, 0]}
+    # Table S6: inherit the 40/10/50 one-step configuration for every horizon.
+    PatchTST: {nhead: 4, dropout: 0.0, d_model: 64, layers: 1, patch_length: 8, learning_rate: 0.002, batch_size: 64, d_ff: 256, stride: 4}
