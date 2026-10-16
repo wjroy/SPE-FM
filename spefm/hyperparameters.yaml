@@ -11,7 +11,8 @@ model:
   prompt_length: 8
   injection_layers: [0, 1, 2, 3, 16, 17, 18, 19]
 training:
-  seed: 42
+  seeds: [42, 43, 44]  # Independent fits for reproduce.py; metrics are averaged across seeds.
+  seed: 42  # Individual run.py stages and Figure 15.
   batch_size: 8
   epochs: 24
   patience: 8
