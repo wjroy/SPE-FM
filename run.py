@@ -53,9 +53,9 @@ def load_config(path, split=None, selected=True, horizon=None):
     return cfg
 
 
-def prediction_stage(stage, cfg, output, config_directory, values, dates, nodes, bounds):
+def prediction_stage(stage, cfg, output, config_directory, values, dates, nodes, bounds, *, point_only=False):
     from spefm.prediction import Predictor
-    from spefm.metrics import evaluate
+    from spefm.metrics import evaluate, evaluate_points
     from spefm.uncertainty import increment_scale, perturb, event_cloud
     from spefm.risk import warning
     from spefm.calibration import OnlineInterval, apply_width_scale
@@ -65,6 +65,15 @@ def prediction_stage(stage, cfg, output, config_directory, values, dates, nodes,
     x, actual, origins = windows(values, bounds["test"], context, horizon)
     if stage == "predict":
         pred = predictor.predict(x)
+        if point_only:
+            point = pred[..., cfg["inference"]["point_head"]]
+            per_node, summary = evaluate_points(actual, point)
+            np.savez_compressed(output/"point_predictions.npz", predictions=point, actual=actual,
+                                origins=origins, dates=dates[origins], nodes=np.asarray(nodes))
+            pd.DataFrame({"node": nodes, **per_node}).to_csv(output/"point_metrics.csv", index=False)
+            (output/"point_metrics.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+            print(summary)
+            return
         per_node, summary = evaluate(actual, pred, point_head=cfg["inference"]["point_head"])
         np.savez_compressed(output/"predictions.npz", predictions=pred, actual=actual,
                             origins=origins, dates=dates[origins], nodes=np.asarray(nodes))
@@ -114,8 +123,11 @@ def main():
     ap.add_argument("--config", type=Path, default=Path(__file__).with_name("config.yaml"))
     ap.add_argument("--split", choices=list(SPLITS), help="Override the chronological split; use a separate output directory.")
     ap.add_argument("--horizon", type=int)
+    ap.add_argument("--point-only", action="store_true", help="Predict test points and RMSE/MAE without interval calibration; predict stage only.")
     ap.add_argument("--output", type=Path, required=True, help="Run directory with overwrite protection for completed stages.")
     args = ap.parse_args()
+    if args.point_only and args.stage != "predict":
+        ap.error("--point-only is available only for the predict stage.")
     cfg = load_config(args.config, args.split, horizon=args.horizon)
     path = Path(cfg["data"]["csv"])
     if not path.is_absolute():
@@ -148,10 +160,10 @@ def main():
     if any(previous.get(key) != json.loads(json.dumps(metadata[key])) for key in metadata):
         ap.error("Data or configuration differ from this run; use a new run directory.")
     stage_file = output/{"train": "decoder.pt" if cfg.get("decoder", {}).get("enabled", False) else "prompt.pt",
-                         "predict": "predictions.npz", "warning": "warning.npz"}[args.stage]
+                         "predict": "point_predictions.npz" if args.point_only else "predictions.npz", "warning": "warning.npz"}[args.stage]
     if stage_file.exists():
         ap.error("This stage already has results; use a new run directory.")
-    if args.stage == "predict" and h == 1 and cfg.get("calibration", {}).get("enabled", False):
+    if args.stage == "predict" and not args.point_only and h == 1 and cfg.get("calibration", {}).get("enabled", False):
         settings = cfg["calibration"]
         for stage, marker in (("fit", "calibration.json"), ("predict", "predictions.npz")):
             if not (output/marker).exists():
@@ -172,7 +184,7 @@ def main():
                         "--learning-rate", str(settings["learning_rate"])], check=True)
     if args.stage in ("predict", "warning"):
         prediction_stage(args.stage, cfg, output, args.config.resolve().parent,
-                         values, dates, nodes, bounds)
+                         values, dates, nodes, bounds, point_only=args.point_only)
         return
     try:
         weights_path = resolve_backbone_weights(
