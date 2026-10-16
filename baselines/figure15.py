@@ -120,7 +120,7 @@ def execute(settings, config, settings_path, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('stage', choices=['run', 'evaluate', 'plot'])
+    parser.add_argument('stage', choices=['run', 'evaluate'])
     parser.add_argument('--config', type=Path, default=Path(__file__).with_name('configs') / 'figure15.yaml')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--runs', type=Path)
@@ -129,20 +129,17 @@ def main():
     args = parser.parse_args()
     settings, config = configuration(args.config, args.backbone_weights, args.device)
     output = args.output.resolve()
-    if args.stage != 'plot':
-        if output.exists() and any(output.iterdir()):
-            raise FileExistsError(output)
-        output.mkdir(parents=True, exist_ok=True)
-        (output / 'experiment.yaml').write_text(yaml.safe_dump(settings, sort_keys=False), encoding='utf-8')
-        if args.stage == 'run':
-            if args.runs is not None:
-                parser.error('--runs is only valid for evaluate.')
-            execute(settings, config, args.config, output)
-        elif args.runs is None:
-            parser.error('evaluate requires --runs.')
-        summarize(output if args.stage == 'run' else args.runs.resolve(), output, config)
-    from baselines.plot_figure15 import plot
-    plot(output, settings['figure'])
+    if output.exists() and any(output.iterdir()):
+        raise FileExistsError(output)
+    output.mkdir(parents=True, exist_ok=True)
+    (output / 'experiment.yaml').write_text(yaml.safe_dump(settings, sort_keys=False), encoding='utf-8')
+    if args.stage == 'run':
+        if args.runs is not None:
+            parser.error('--runs is only valid for evaluate.')
+        execute(settings, config, args.config, output)
+    elif args.runs is None:
+        parser.error('evaluate requires --runs.')
+    summarize(output if args.stage == 'run' else args.runs.resolve(), output, config)
 
 
 if __name__ == '__main__':
