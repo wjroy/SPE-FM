@@ -62,44 +62,19 @@ python run_baselines.py --mode plan --output outputs/baseline_plan
 python run_baselines.py --mode selected --models Persistence "Moving average" ARIMA --horizon 1 --output outputs/statistical_h1
 python run_baselines.py --mode selected --models Persistence "Moving average" ARIMA --split 40/10/50 --horizon 3 --output outputs/statistical_h3
 python run_baselines.py --mode selected --models Att-BiLSTM --split 40/10/50 --horizon 1 --output outputs/attbilstm40
+python run_baselines.py --mode selected --models PatchTST --split 40/10/50 --horizon 3 --output outputs/patchtst40_h3
 python run_baselines.py --mode search --models ARIMA --split 40/10/50 --horizon 1 --output outputs/arima40_search
 ```
 
 `plan` exports configurations; `selected` runs fixed configurations; `search` selects configurations on validation data. Statistical models use grid search. Neural search evaluates the explicit candidate lists in the configuration: 16 sampled/anchored candidates per split, successive halving with 6 and 3 survivors, and a protected candidate. Training states continue across stages.
 
-By default, all neural baselines use training seed 42 and select checkpoints and configurations using validation data with evaluation seed 42. PatchTST uses normalized MSE with RevIN disabled; the other neural models use RMSE. Temporal models use epoch budgets; A3TGCN uses optimizer-update budgets. Settings are in `baselines/configs/baseline_search.yaml`.
+Neural baselines run three independent training seeds (42, 43 and 44). Final MAE/RMSE are the arithmetic mean of the per-seed metrics, after node averaging; predictions are not ensembled. Checkpoints and configurations are selected using validation data with evaluation seed 42. Persistence, Moving average and ARIMA are deterministic and do not use training seeds.
 
-Runs save settings, checkpoints, predictions, diagnostics and MAE/RMSE. Neural baseline metrics are averaged across nodes, then across the configured training seeds.
+PatchTST uses normalized MSE with RevIN disabled; the other neural models use RMSE. Temporal models use epoch budgets; A3TGCN uses optimizer-update budgets. Settings are in `baselines/configs/baseline_search.yaml`.
 
-For longer horizons, use `--horizon 5` or `--horizon 8` with separate output directories.
+Runs save settings, checkpoints, predictions, diagnostics, and per-seed and aggregated MAE/RMSE.
 
-## Unified random seed
-
-All configured experiments use **training seed 42 by default**. Each neural baseline has `seeds: [42]` in `baselines/configs/baseline_search.yaml`; checkpoint evaluation uses `evaluation_seed: 42`. The SPE-FM configuration and Figure 15 experiment configuration also use seed 42.
-
-| Model | 60/10/30 | 40/10/50 | 20/10/70 | 40/10/50, T = 3, 5, 8 |
-|---|---:|---:|---:|---:|
-| Att-BiLSTM | 42 | 42 | 42 | — |
-| Transformer | 42 | 42 | 42 | — |
-| Informer | 42 | 42 | 42 | — |
-| PatchTST | 42 | 42 | 42 | 42 |
-| A3TGCN | 42 | 42 | 42 | — |
-
-The default outputs are **single-seed metrics** after node averaging. They are not three-seed means. Persistence, Moving average and ARIMA are deterministic under the specified settings and have no training seed.
-
-Use the fixed configurations from Supplementary Table S6 without a seed override:
-
-```bash
-python run_baselines.py --mode selected --models Att-BiLSTM --split 40/10/50 --horizon 1 --output outputs/attbilstm40_seed42
-python run_baselines.py --mode selected --models Transformer --split 20/10/70 --horizon 1 --output outputs/transformer20_seed42
-python run_baselines.py --mode selected --models PatchTST --split 40/10/50 --horizon 3 --output outputs/patchtst40_h3_seed42
-```
-
-Use separate output directories for horizons 5 and 8. Extended-horizon PatchTST inherits the 40/10/50 one-step hyperparameters and trains a separate output head for each horizon. Its metrics average over predicted steps within each node, then across nodes. `--mode search` instead performs a new horizon-specific hyperparameter search; it is a different experiment from using the fixed selected configuration.
-
-**Manuscript correspondence:** in the reproduction check, Table 5 values were closest to individual runs with different training seeds, while Table 6 PatchTST was closest to the mean over seeds 42, 43 and 44. This numerical correspondence does not establish which seeds were used in the original runs, because their original logs were not available. The historical values do not all reproduce under the new uniform seed42 default. The manuscript tables and methods should use the corresponding seed42 results before describing all experiments as a common single-seed protocol. The selected architecture and optimizer hyperparameters are unchanged.
-
-The optional `--seeds` argument remains available for explicitly requested repeated-run experiments. For example, `--seeds 42 43 44` reports the arithmetic mean of those separate runs' metrics; it does not ensemble predictions. This option is not used by the default seed42 protocol.
+For longer horizons, use `--horizon 5` or `--horizon 8` with separate output directories. In selected mode, extended-horizon PatchTST reuses the 40/10/50 one-step hyperparameters and trains a separate output head for each horizon.
 
 ## License
 
