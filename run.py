@@ -233,7 +233,6 @@ def main():
     torch.save(decoder.checkpoint(digest(prompt_file), digest(output/"spatial.npz")), staged)
     pd.DataFrame(history).to_csv(output/"decoder_training.csv", index=False)
     staged.replace(output/"decoder.pt")
-    print(f"Decoder validation RMSE={min(row['validation_RMSE'] for row in history):.6f}")
 
 
 if __name__ == "__main__":
