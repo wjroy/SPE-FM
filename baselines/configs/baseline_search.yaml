@@ -141,7 +141,7 @@ models:
       budgets: [80, 200, 400]
       keep: [6, 3]
       protected_candidate: 1
-      seeds: [42]
+      seeds: [42, 43, 44]
       patience_checks: 40
       evaluation_interval: epoch
       min_updates: 0
@@ -218,7 +218,7 @@ models:
       budgets: [80, 200, 400]
       keep: [6, 3]
       protected_candidate: 1
-      seeds: [42]
+      seeds: [42, 43, 44]
       patience_checks: 40
       evaluation_interval: epoch
       min_updates: 0
@@ -305,7 +305,7 @@ models:
       budgets: [80, 200, 400]
       keep: [6, 3]
       protected_candidate: 1
-      seeds: [42]
+      seeds: [42, 43, 44]
       patience_checks: 40
       evaluation_interval: epoch
       min_updates: 0
@@ -398,7 +398,7 @@ models:
       budgets: [60, 180, 400]
       keep: [6, 3]
       protected_candidate: 1
-      seeds: [42]
+      seeds: [42, 43, 44]
       patience_checks: 40
       evaluation_interval: epoch
       min_updates: 0
@@ -476,7 +476,7 @@ models:
       budgets: [400, 1200, 3200]
       keep: [6, 3]
       protected_candidate: 1
-      seeds: [42]
+      seeds: [42, 43, 44]
       patience_checks: 25
       evaluation_interval: 20
       min_updates: 400
