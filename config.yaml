@@ -22,7 +22,7 @@ model:
 training:
   seed: 42
   batch_size: 8
-  epochs: 100
+  epochs: 24
   patience: 8
   lr: 0.0005
   weight_decay: 0.0
@@ -31,6 +31,25 @@ inference:
   node_sequence_budget: 8192
   point_head: 5
   quantile_crossing_correction: true
+calibration:
+  enabled: true
+  coverage: 0.81
+  learning_rate: 0.25
+split_overrides:
+  60/10/30:
+    model:
+      prompt_length: 4
+      injection_layers: [0, 1, 2, 3, 4, 15, 16, 17, 18, 19]
+    training:
+      lr: 0.003727593720314938
+      weight_decay: 0.0007142857142857144
+  20/10/70:
+    model:
+      prompt_length: 4
+      injection_layers: [0, 1, 2, 3, 4, 15, 16, 17, 18, 19]
+    training:
+      lr: 0.003727593720314938
+      weight_decay: 0.0007142857142857144
 uncertainty:
   replicas: 300
   seed: 42

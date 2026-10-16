@@ -3,6 +3,8 @@ import hashlib
 import json
 from pathlib import Path
 import random
+import subprocess
+import sys
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -22,6 +24,19 @@ def digest(path):
     return h.hexdigest()
 
 
+def load_config(path, split=None, selected=True):
+    cfg = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if split:
+        cfg["data"]["split"] = SPLITS[split].copy()
+    overrides = cfg.pop("split_overrides", {})
+    if selected:
+        for name, sections in overrides.items():
+            if cfg["data"]["split"] == SPLITS[name]:
+                for section, settings in sections.items():
+                    cfg[section].update(settings)
+    return cfg
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("stage", choices=["spatial", "train", "predict", "warning"])
@@ -29,9 +44,7 @@ def main():
     ap.add_argument("--split", choices=list(SPLITS), help="Override the chronological split; use a separate output directory.")
     ap.add_argument("--output", type=Path, required=True, help="Run directory with overwrite protection for completed stages.")
     args = ap.parse_args()
-    cfg = yaml.safe_load(args.config.read_text(encoding="utf-8"))
-    if args.split:
-        cfg["data"]["split"] = SPLITS[args.split].copy()
+    cfg = load_config(args.config, args.split)
     path = Path(cfg["data"]["csv"])
     if not path.is_absolute():
         path = args.config.resolve().parent/path
@@ -65,6 +78,17 @@ def main():
     stage_file = output/{"train": "prompt.pt", "predict": "predictions.npz", "warning": "warning.npz"}[args.stage]
     if stage_file.exists():
         ap.error("This stage already has results; use a new run directory.")
+    if args.stage == "predict" and h == 1 and cfg.get("calibration", {}).get("enabled", False):
+        settings = cfg["calibration"]
+        for stage, marker in (("fit", "calibration.json"), ("predict", "predictions.npz")):
+            if not (output/marker).exists():
+                subprocess.run([sys.executable, "-X", "utf8", "-s", "-u",
+                                str(Path(__file__).with_name("calibrate.py")), stage,
+                                "--run", str(output), "--output", str(output),
+                                "--config-directory", str(args.config.resolve().parent),
+                                "--coverage", str(settings["coverage"]),
+                                "--learning-rate", str(settings["learning_rate"])], check=True)
+        return
     try:
         weights_path = resolve_backbone_weights(
             cfg["model"].get("backbone_weights"), config_directory=args.config.resolve().parent)
