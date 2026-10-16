@@ -29,6 +29,15 @@ def digest(path):
 
 def load_config(path, split=None, selected=True, horizon=None):
     cfg = yaml.safe_load(path.read_text(encoding="utf-8"))
+    parameters = cfg.pop("hyperparameters", None)
+    if parameters is not None:
+        defaults = yaml.safe_load((path.parent/parameters).read_text(encoding="utf-8"))
+        for section, values in cfg.items():
+            if isinstance(values, dict) and isinstance(defaults.get(section), dict):
+                defaults[section].update(values)
+            else:
+                defaults[section] = values
+        cfg = defaults
     if split:
         cfg["data"]["split"] = SPLITS[split].copy()
     if horizon is not None:
