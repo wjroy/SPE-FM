@@ -10,7 +10,7 @@ from scipy.stats import gaussian_kde
 
 ORDER = ['SPEFM', 'IO', 'LORA', 'FROZEN']
 COLORS = dict(SPEFM='#75a745', IO='#21a8d8', LORA='#e68b9b', FROZEN='#ef8b16')
-LABELS = ['Spatial prompts + gated\ndecoder (SPE-FM, ours)', 'Input- and output-module\nfine-tuning',
+LABELS = ['SPE-FM strategy', 'Input- and output-module\nfine-tuning',
           'LoRA fine-tuning', 'Frozen pretrained\nbackbone']
 
 
