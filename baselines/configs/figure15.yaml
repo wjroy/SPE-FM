@@ -16,11 +16,3 @@ baselines:
     rank: 6
     alpha: 8
     dropout: 0
-figure:
-  font: Times New Roman
-  width_mm: 183
-  height_mm: 126
-  dpi: 600
-  preview_dpi: 180
-  stem: Figure15
-  caption: "Fig. 15. RMSE, MAE, PICP and CWC across 84 nodes (40/10/50; seed 42). SPE-FM uses calibrated intervals; IO, LoRA and FROZEN use native intervals. CWC nominal coverage: 0.80."
