@@ -16,7 +16,7 @@ Place the official [TimesFM 2.5-200M checkpoint](https://huggingface.co/google/t
 
 | File | Conditions |
 |---|---|
-| [spefm/hyperparameters.yaml](spefm/hyperparameters.yaml) | SPE-FM: seed 42; Table 2/S2; Table 5 splits 60/10/30, 40/10/50, 20/10/70; Table 6 horizons 1, 3, 5, 8; Figure 15 |
+| [spefm/hyperparameters.yaml](spefm/hyperparameters.yaml) | SPE-FM parameters; Tables 5–6 training seeds 42, 43, 44; Figure 15 seed 42 |
 | [config.yaml](config.yaml) | Data, weights and device |
 | [baselines/configs/baseline_selected.yaml](baselines/configs/baseline_selected.yaml) | Selected baseline parameters |
 | [baselines/configs/baseline_search.yaml](baselines/configs/baseline_search.yaml) | Baseline search spaces and seeds |
@@ -27,13 +27,16 @@ Data: `data/settlement.csv`, 340 observations × 84 nodes, millimetres. The defa
 ## SPE-FM
 
 ```bash
-python run.py spatial --output outputs/run40 --split 40/10/50
-python run.py train   --output outputs/run40 --split 40/10/50
-python run.py predict --output outputs/run40 --split 40/10/50
-python run.py warning --output outputs/run40 --split 40/10/50
+# Table 5
+python reproduce.py --split 60/10/30 40/10/50 20/10/70 --horizon 1 --output outputs/table5
+
+# Table 6
+python reproduce.py --split 40/10/50 --horizon 3 5 8 --output outputs/table6
 ```
 
-Use `--horizon 3`, `--horizon 5` or `--horizon 8` for Table 6 and a separate output directory per condition. The warning stage supports horizon 1. Point metrics use q0.5; one-step intervals use causal calibration.
+Both commands use the selected hyperparameters and independently train seeds **42, 43 and 44**, then predict test-set q0.5 points. Spatial clustering retains seed 42. `per_seed_metrics.csv` contains individual results; `summary.csv` reports the arithmetic mean and sample standard deviation (ddof=1) of node-averaged RMSE/MAE. Predictions are not ensembled.
+
+Use an empty output directory. Add `--jobs 2 --threads 4` for two concurrent runs. Individual spatial, training, interval-prediction and warning stages remain available through `run.py` (single training seed 42 by default); the warning stage supports horizon 1.
 
 ## Baselines
 
