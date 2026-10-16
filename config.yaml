@@ -17,7 +17,7 @@ spatial:
 model:
   backbone_weights: weights/model.safetensors
   prompt_length: 8
-  injection_layers: [0, 1, 2, 17, 18, 19]
+  injection_layers: [0, 1, 2, 3, 16, 17, 18, 19]
   device: auto
 training:
   seed: 42
@@ -89,6 +89,14 @@ split_overrides:
     training:
       lr: 0.003727593720314938
       weight_decay: 0.0007142857142857144
+  40/10/50:
+    model:
+      prompt_length: 8
+      injection_layers: [0, 1, 2, 3, 16, 17, 18, 19]
+    training:
+      batch_size: 8
+      lr: 0.0005
+      weight_decay: 0.0
   20/10/70:
     model:
       prompt_length: 4
@@ -110,3 +118,4 @@ risk:
   entropy_mode: membership
   grade_scores: [0, 0.25, 0.5, 0.75, 1]
   seed: 42
+
