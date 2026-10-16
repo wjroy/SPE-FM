@@ -22,23 +22,30 @@ def fit(model, train_pair, val_pair, node_weights, settings):
     rng = np.random.default_rng(settings["seed"])
     best, stale, history, best_state = float("inf"), 0, [], None
     size = settings["batch_size"]
+    micro = min(size, settings.get("micro_batch_size", size))
+    if micro < 1:
+        raise ValueError("Micro batch size must be positive.")
     for epoch in range(settings["epochs"]):
         model.train()
         train_losses = []
         for ids in np.array_split(rng.permutation(len(train_pair[0])), max(1, int(np.ceil(len(train_pair[0])/size)))):
-            x, y = (torch.as_tensor(a[ids], dtype=torch.float32, device=device) for a in train_pair)
             optimizer.zero_grad(set_to_none=True)
-            loss = forecast_loss(model(x, weights, y.shape[1]), y)
-            if not torch.isfinite(loss):
-                raise FloatingPointError("Nonfinite training loss.")
-            loss.backward()
+            total = 0.
+            for start in range(0, len(ids), micro):
+                part = ids[start:start+micro]
+                x, y = (torch.as_tensor(a[part], dtype=torch.float32, device=device) for a in train_pair)
+                loss = forecast_loss(model(x, weights, y.shape[1]), y)
+                if not torch.isfinite(loss):
+                    raise FloatingPointError("Nonfinite training loss.")
+                (loss*len(part)/len(ids)).backward()
+                total += float(loss.detach())*len(part)/len(ids)
             optimizer.step()
-            train_losses.append((float(loss.detach()), len(ids)))
+            train_losses.append((total, len(ids)))
         model.eval()
         val_losses = []
         with torch.inference_mode():
-            for start in range(0, len(val_pair[0]), size):
-                x, y = (torch.as_tensor(a[start:start+size], dtype=torch.float32, device=device) for a in val_pair)
+            for start in range(0, len(val_pair[0]), micro):
+                x, y = (torch.as_tensor(a[start:start+micro], dtype=torch.float32, device=device) for a in val_pair)
                 loss = forecast_loss(model(x, weights, y.shape[1]), y)
                 val_losses.append((float(loss), len(x)))
         train_mean = sum(v*n for v, n in train_losses)/sum(n for _, n in train_losses)

@@ -29,12 +29,58 @@ training:
   loss: mean_pinball
 inference:
   node_sequence_budget: 8192
+  max_batch_size: 8
   point_head: 5
   quantile_crossing_correction: true
 calibration:
   enabled: true
   coverage: 0.81
   learning_rate: 0.25
+decoder:
+  enabled: true
+  width: 64
+  batch_size: 16
+  lr: 0.001
+  weight_decay: 0.0
+  gate_lower: 0.2
+  gate_upper: 0.95
+  neighbors: 5
+  epochs: 80
+  patience: 10
+horizon_overrides:
+  3:
+    model:
+      prompt_length: 16
+      injection_layers: [0, 1, 2, 3, 4, 15, 16, 17, 18, 19]
+    training:
+      initialize_after_backend_import: true
+      batch_size: 32
+      micro_batch_size: 4
+      lr: 0.005
+      weight_decay: 0.0001
+      epochs: 6
+  5:
+    model:
+      prompt_length: 8
+      injection_layers: [0, 1, 2, 3, 16, 17, 18, 19]
+    training:
+      initialize_after_backend_import: true
+      batch_size: 4
+      micro_batch_size: 4
+      lr: 0.01
+      weight_decay: 0.000272727
+      epochs: 6
+  8:
+    model:
+      prompt_length: 4
+      injection_layers: [0, 1, 18, 19]
+    training:
+      initialize_after_backend_import: true
+      batch_size: 32
+      micro_batch_size: 8
+      lr: 0.05
+      weight_decay: 0.00001
+      epochs: 6
 split_overrides:
   60/10/30:
     model:
