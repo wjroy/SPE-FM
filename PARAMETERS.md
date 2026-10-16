@@ -6,17 +6,17 @@ Layer indices are zero-based. Settings: [SPE-FM](spefm/hyperparameters.yaml), [b
 
 | Experiment | Split | Horizon | Prompt length | Injection layers | Batch | Microbatch | Learning rate | Weight decay | Epoch limit | Seeds |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Main / Table 2 / Figure 15 | 40/10/50 | 1 | 8 | 0–3, 16–19 | 8 | — | 0.0005 | 0 | 24 | 42 |
-| Table 5 | 60/10/30 | 1 | 4 | 0–4, 15–19 | 8 | — | 0.003727593720314938 | 0.0007142857142857144 | 24 | 42, 43, 44 |
-| Table 5 | 40/10/50 | 1 | 8 | 0–3, 16–19 | 8 | — | 0.0005 | 0 | 24 | 42, 43, 44 |
-| Table 5 | 20/10/70 | 1 | 4 | 0–4, 15–19 | 8 | — | 0.003727593720314938 | 0.0007142857142857144 | 24 | 42, 43, 44 |
-| Table 6 | 40/10/50 | 3 | 16 | 0–4, 15–19 | 32 | 4 | 0.005 | 0.0001 | 6 | 42, 43, 44 |
-| Table 6 | 40/10/50 | 5 | 8 | 0–3, 16–19 | 4 | 4 | 0.01 | 0.000272727 | 6 | 42, 43, 44 |
-| Table 6 | 40/10/50 | 8 | 4 | 0–1, 18–19 | 32 | 8 | 0.05 | 0.00001 | 6 | 42, 43, 44 |
+| Main / Table 2 / Figure 15 | 40/10/50 | 1 | 8 | 0–3, 16–19 | 8 | — | 5e-4 | 0 | 24 | 42 |
+| Table 5 | 60/10/30 | 1 | 4 | 0–4, 15–19 | 8 | — | 3.728e-3 | 7.143e-4 | 24 | 42, 43, 44 |
+| Table 5 | 40/10/50 | 1 | 8 | 0–3, 16–19 | 8 | — | 5e-4 | 0 | 24 | 42, 43, 44 |
+| Table 5 | 20/10/70 | 1 | 4 | 0–4, 15–19 | 8 | — | 3.728e-3 | 7.143e-4 | 24 | 42, 43, 44 |
+| Table 6 | 40/10/50 | 3 | 16 | 0–4, 15–19 | 32 | 4 | 5e-3 | 1e-4 | 6 | 42, 43, 44 |
+| Table 6 | 40/10/50 | 5 | 8 | 0–3, 16–19 | 4 | 4 | 1e-2 | 2.727e-4 | 6 | 42, 43, 44 |
+| Table 6 | 40/10/50 | 8 | 4 | 0–1, 18–19 | 32 | 8 | 5e-2 | 1e-5 | 6 | 42, 43, 44 |
 
 ## Table S2
 
-Split 40/10/50; context 8; horizon 1; seed 42; prompt length 8; batch 8; learning rate 0.0005; weight decay 0; epoch limit 24.
+Split 40/10/50; context 8; horizon 1; seed 42; prompt length 8; batch 8; learning rate 5e-4; weight decay 0; epoch limit 24.
 
 | Configuration | Injection layers | Selected |
 |---|---|---|
@@ -39,7 +39,7 @@ Split 40/10/50; context 8; horizon 1; seed 42; prompt length 8; batch 8; learnin
 | Backbone | TimesFM 2.5-200M; frozen; dimension 1280; 20 layers |
 | Prompt training | AdamW; mean pinball loss; patience 8 |
 | Extended-horizon initialization | Import backend before seeding; deterministic algorithms enabled |
-| Decoder | Width 64; batch 16; AdamW; learning rate 0.001; weight decay 0; epoch limit 80; patience 10 |
+| Decoder | Width 64; batch 16; AdamW; learning rate 1e-3; weight decay 0; epoch limit 80; patience 10 |
 | Decoder gate | Lower 0.2; upper 0.95; neighbors 5 |
 | Point prediction | q0.5; head 5 |
 | Inference | Maximum batch 8; node-sequence budget 8192; quantile crossing correction enabled |
@@ -66,9 +66,9 @@ Split 40/10/50; context 8; horizon 1; seed 42.
 
 | Method | Training | Learning rate | Weight decay | Batch | Epoch limit | Patience | Calibration |
 |---|---|---|---|---|---|---|---|
-| SPE-FM | Spatial prompts + gated decoder | 0.0005 / 0.001 | 0 / 0 | 8 / 16 | 24 / 80 | 8 / 10 | Enabled |
-| IO | Input/output modules; mean pinball | 0.001 | 0.00001 | 8 | 24 | 8 | Disabled |
-| LoRA | Rank 6; alpha 8; dropout 0; mean pinball | 0.001 | 0.00001 | 8 | 24 | 8 | Disabled |
+| SPE-FM | Spatial prompts + gated decoder | 5e-4 / 1e-3 | 0 / 0 | 8 / 16 | 24 / 80 | 8 / 10 | Enabled |
+| IO | Input/output modules; mean pinball | 1e-3 | 1e-5 | 8 | 24 | 8 | Disabled |
+| LoRA | Rank 6; alpha 8; dropout 0; mean pinball | 1e-3 | 1e-5 | 8 | 24 | 8 | Disabled |
 | FROZEN | Frozen backbone | — | — | 8 | — | — | Disabled |
 
 ## Risk settings
