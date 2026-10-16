@@ -53,6 +53,39 @@ python run.py warning --config config.yaml --output outputs/run40 --split 40/10/
 
 Use a separate output directory for each experiment. Point metrics use q0.5. The warning stage requires one-step forecasts. Existing outputs are protected from overwriting.
 
+## Selected SPE-FM hyperparameters
+
+All SPE-FM conditions use seed 42, an input length of 8, a frozen TimesFM backbone, AdamW, mean pinball loss and prompt early-stopping patience 8. Layer indices below are one-based; `config.yaml` uses zero-based indices. Epoch values are maximum training budgets.
+
+### Table 5: chronological splits, horizon 1
+
+| Train/validation/test | Batch size | Prompt length R | Learning rate | Weight decay | Injection layers | Epochs |
+|---|---:|---:|---:|---:|---|---:|
+| 60/10/30 | 8 | 4 | 0.003727593720314938 | 0.0007142857142857144 | 1–5, 16–20 | 24 |
+| 40/10/50 | 8 | 8 | 0.0005 | 0 | 1–4, 17–20 | 24 |
+| 20/10/70 | 8 | 4 | 0.003727593720314938 | 0.0007142857142857144 | 1–5, 16–20 | 24 |
+
+The default 40/10/50 one-step configuration uses shallow–deep 4+4 prompting. Prompt micro-batch size is 8 for these three conditions.
+
+### Table 6: extended horizons, split 40/10/50
+
+| Horizon T | Batch size | Micro-batch size | Prompt length R | Learning rate | Weight decay | Injection layers | Epochs |
+|---|---:|---:|---:|---:|---:|---|---:|
+| 3 | 32 | 4 | 16 | 0.005 | 0.0001 | 1–5, 16–20 | 6 |
+| 5 | 4 | 4 | 8 | 0.01 | 0.000272727 | 1–4, 17–20 | 6 |
+| 8 | 32 | 8 | 4 | 0.05 | 0.00001 | 1–2, 19–20 | 6 |
+
+These three horizon profiles set `initialize_after_backend_import: true`. The split profile is applied before the horizon profile. Select conditions with `--split` and `--horizon`.
+
+### Shared SPE-FM settings
+
+| Component | Settings |
+|---|---|
+| Spatial prior | K candidates 1–10; 30 restarts; maximum 1000 iterations; seed 42; inverse-distance soft association; path-normalized DTW |
+| Gated decoder | Enabled; width 64; batch size 16; learning rate 0.001; weight decay 0; gate bounds 0.20–0.95; 5 neighbours; maximum 80 epochs; patience 10 |
+| One-step interval calibration | Enabled; target coverage 0.81; update learning rate 0.25 |
+| Inference | Point head 5 (q0.5); quantile-crossing correction enabled; maximum batch size 8; node-sequence budget 8192 |
+
 ## Baselines
 
 Models: Persistence, Moving average, ARIMA, Att-BiLSTM, Transformer, Informer, PatchTST and A3TGCN. ARIMA defaults to an eight-observation fitting window. Third-party model sources are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
@@ -79,3 +112,4 @@ For longer horizons, use `--horizon 5` or `--horizon 8` with separate output dir
 ## License
 
 Original code: [MIT License](LICENSE). Third-party licenses: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `licenses/`. The code license does not cover monitoring data; redistribution requires the data owner's permission.
+
