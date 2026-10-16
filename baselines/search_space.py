@@ -41,7 +41,8 @@ def planned_trials(config):
             if split not in SPLITS or not isinstance(horizon, int) or horizon < 1:
                 raise ValueError("Invalid split or forecast horizon.")
             for model, spec in config["models"].items():
-                if spec["family"] not in conditions["families"]:
+                if (spec["family"] not in conditions["families"]
+                        or model not in conditions.get("models", config["models"])):
                     continue
                 for index, params in enumerate(candidates(spec, split), 1):
                     trial = dict(status="planned_not_run", experiment=experiment,
